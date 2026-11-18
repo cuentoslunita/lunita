@@ -1,0 +1,18 @@
+{
+  "id": "./",
+  "name": "Lunita · Cuentos para dormir",
+  "short_name": "Lunita",
+  "description": "Cuentos para dormir donde tu peque es el protagonista y elige cómo sigue la historia.",
+  "lang": "es-AR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1b1e4b",
+  "theme_color": "#1b1e4b",
+  "categories": ["kids", "books", "education"],
+  "icons": [
+    { "src": "arte/pwa/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "arte/pwa/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "arte/pwa/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

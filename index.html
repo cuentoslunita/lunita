@@ -6,6 +6,12 @@
 <title>Lunita · Cuentos para dormir</title>
 <meta name="description" content="Cuentos para dormir donde tu peque es el protagonista y elige cómo sigue la historia.">
 <link rel="icon" type="image/webp" href="arte/ui/logo.webp">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="arte/pwa/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Lunita">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Lunita · Cuentos para dormir">
 <meta property="og:description" content="Tu peque es el protagonista y elige cómo sigue el cuento. Cada decisión lleva a un final distinto.">
@@ -2019,7 +2025,7 @@ function modalHTML(){
     <h3>Quiénes somos</h3><p>Lunita es un proyecto independiente de cuentos para dormir, hecho en Argentina. Es una app para que las familias lean juntas: los cuentos los eligen y los compran los adultos.</p>
     <h3>Qué se guarda</h3><p>El nombre que escribas para el personaje, cómo lo armaste, qué finales descubrieron y la hora del aviso. Si activás Lunita Ilimitado, también guardamos <b>el mail con el que pagaste y un permiso de acceso</b>, para renovarlo solos cada mes. <b>Todo se guarda solo en este dispositivo</b>, en tu navegador. No hay cuentas, y no te pedimos fotos ni datos de los chicos.</p>
     <h3>Qué no hacemos</h3><p>No usamos cookies, publicidad ni herramientas de seguimiento, y no vendemos ni compartimos datos. Lo único que enviamos a un servidor es el mail de pago, solo cuando activás o renovás Lunita Ilimitado (mirá “Pagos”).</p>
-    <h3>Sitio web</h3><p>Las letras y las imágenes están guardadas en la propia app, sin pedirlas a otras empresas. Como cualquier sitio web, el servicio donde está publicada puede registrar datos técnicos de las visitas, como la dirección IP. La función que comprueba los pagos está alojada en Cloudflare, que también puede registrar datos técnicos de la consulta.</p>
+    <h3>Sitio web</h3><p>Las letras y las imágenes están guardadas en la propia app, sin pedirlas a otras empresas. Como cualquier sitio web, el servicio donde está publicada puede registrar datos técnicos de las visitas, como la dirección IP. La función que comprueba los pagos está alojada en Cloudflare, que también puede registrar datos técnicos de la consulta. Para poder leer sin conexión, la app guarda en tu dispositivo copias de sus propias páginas e imágenes.</p>
     <h3>Lectura en voz alta</h3><p>La función de escuchar el cuento usa la voz de tu dispositivo o de tu navegador. Según cuál sea, puede procesar el texto en línea. Si preferís evitarlo, no la uses.</p>
     <h3>Aviso de novedades</h3><p>Si nos escribís para que te avisemos de cuentos nuevos, recibimos tu mail. Lo usamos solo para eso, no lo compartimos y lo borramos cuando lo pidas.</p>
     <h3>Pagos</h3><p>El pago lo hace Mercado Pago: Lunita no ve ni guarda los datos de tu tarjeta. Para activar Lunita Ilimitado, la app le manda el mail que escribas a una función de Lunita, que se lo consulta a Mercado Pago para comprobar que tu suscripción esté vigente. Esa función no guarda el mail ni lo escribe en registros, y responde con un permiso de acceso que queda en tu dispositivo. Mercado Pago trata esos datos según su propia política. Cuando se acerca el vencimiento del permiso, la app repite la consulta sola.</p>
@@ -2237,4 +2243,10 @@ function start(data){
 }
 window.claude?.hot?.snapshot?.(()=>({...S,modal:null,audio:false}));
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+</script>
+<script>
+/* Service worker: permite instalar la app y leer sin conexión lo ya abierto. Solo en https o localhost; si falla, la app anda igual. */
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});
+}
 </script>
