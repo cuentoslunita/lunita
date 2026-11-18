@@ -404,10 +404,9 @@ a.btn{display:inline-block;text-decoration:none}
 /* ===== Configuración ===== */
 const PRICE='$2.500';
 const CONTACT_EMAIL='cuentoslunita@gmail.com';
-const AVISAME_HREF='mailto:'+CONTACT_EMAIL+'?subject=Avisame%20cuando%20Lunita%20Ilimitado%20est%C3%A9%20listo&body=Hola%21%20Quiero%20que%20me%20avisen%20cuando%20est%C3%A9%20lista%20la%20suscripci%C3%B3n%20de%20Lunita.';
-/* Etapa 0: todavía no se cobra. Los cuentos con suscripción están cerrados; con ?acceso=prueba en el link se abren para probarlos (sacar esta puerta antes de cobrar). */
-const ETAPA_0=true;   // mientras no haya cobro, se muestra directo el aviso de que todavía no está a la venta (sin pregunta para adultos)
-const ACCESO_PRUEBA=/[?&]acceso=prueba(&|$)/.test(location.search);
+/* Cobro automático (Mercado Pago + función de Cloudflare). Detalle y pruebas en cobro/README.md. */
+const COBRO={API:'https://lunita-cobro.cuentoslunita.workers.dev',PLAN_URL:'https://mpago.la/1UPZcdz',
+  CLAVE:{"kty":"EC","crv":"P-256","x":"yqwbCT_I4BWDkWlOf3O1YLQQ_c3_8aOjI_zsWhIm90w","y":"N54tDbyds4Xwb_IGoxrcqOxUc2W7TGiL05wQrev6q6Q"}};
 const NAME_FALLBACK='Peque';
 
 /* ===== Opciones del personaje ===== */
@@ -462,7 +461,8 @@ function load(){
       if(d.cfg) Object.assign(S.cfg,d.cfg);
       if(Array.isArray(d.endings)) S.endings.luna=d.endings;
       else if(d.endings) Object.assign(S.endings,d.endings);
-      S.subscribed=false;   // etapa 0: aunque el navegador guarde un plan del piloto anterior, no valeS.big=!!d.big;
+      S.subscribed=false;   // el acceso se restaura solo desde un permiso firmado (restaurarPermiso), nunca desde lo guardado acá
+      S.big=!!d.big;
       if(d.reminder) S.reminder=Object.assign({on:true,time:'20:30'},d.reminder);
       S.lastNotified=d.lastNotified||'';
     }
@@ -1887,7 +1887,7 @@ function reminderHTML(){
     ?`<div class="ctrl"><button class="chip" data-act="rem-toggle" aria-pressed="${r.on}">${r.on?'Aviso activado':'Aviso apagado'}</button><label for="remTime" class="lab">a las</label><input type="time" id="remTime" class="time-in" value="${r.time}"></div>
       <div class="ctrl"><button class="btn sec" data-act="rem-test">Probar el aviso</button></div>
       <p class="fine">En la web, el aviso aparece solo si Lunita está abierta a esa hora.</p>`
-    :`<div class="ctrl"><button class="btn" data-act="premium" data-id="tortuga">Disponible con Lunita Ilimitado, muy pronto</button></div>`;
+    :`<div class="ctrl"><button class="btn" data-act="premium" data-id="tortuga">Disponible con Lunita Ilimitado</button></div>`;
   return `<div class="step"><span class="num blue">${ICON.bell}</span><b>El aviso de la noche</b></div>
   <div class="remind"><div class="copy"><h3>Un aviso a la hora de ir a la cama</h3><p>Elegí la hora y Lunita te muestra el aviso, con el cuento de esa noche listo para ${N()}. En la web, el aviso aparece solo si Lunita está abierta a esa hora.</p>${ctrl}</div>
     <div class="lock-screen" role="img" aria-label="Así se ve el aviso en el celular"><div class="clock" id="remClock">${r.time}</div><div class="date">${date.charAt(0).toUpperCase()+date.slice(1)}</div>${notifHTML(false)}</div></div>`;
@@ -1950,10 +1950,10 @@ function homeHTML(){
   ${reminderHTML()}
   <div class="how">
     <div><b>${FREE_TITLE}</b><p>${FREE_TEXT}</p></div>
-    <div><b>Lunita Ilimitado, muy pronto</b><p>Estamos preparando la suscripción: ${PREMIUM.length} cuentos más y el aviso de la noche, por ${PRICE} al mes (precio previsto). Todavía no se cobra nada.</p>${S.subscribed?'':`<a class="btn sec" href="${AVISAME_HREF}">Avisame cuando esté listo</a>`}</div>
+    <div><b>Lunita Ilimitado</b><p>${PREMIUM.length} cuentos más y el aviso de la noche, por ${PRICE} al mes. Un pago por mes con Mercado Pago, sin período de prueba, y se cancela cuando quieras.</p>${S.subscribed?'':`<button class="btn sec" data-act="premium" data-id="${PREMIUM[0]}">Ver Lunita Ilimitado</button>`}</div>
     <div><b>Pensado para dormir</b><p>Sin publicidad, con letra grande y lectura en voz alta.</p></div>
   </div>
-  <p class="note">Todavía no se cobra nada: Lunita Ilimitado está en preparación. Los cuentos son originales de Lunita o adaptaciones libres de obras y leyendas en dominio público.</p>
+  <p class="note">Los cuentos son originales de Lunita o adaptaciones libres de obras y leyendas en dominio público.</p>
   <p class="note"><button class="linkbtn" data-act="privacy">Privacidad y quiénes somos</button></p>`;
 }
 function readerHTML(){
@@ -1999,26 +1999,33 @@ function modalHTML(){
     <form id="gateForm" class="cg" novalidate><label for="gateIn" class="gate-q">¿Cuánto es ${words(m.a)} más ${words(m.b)}?</label><input id="gateIn" inputmode="numeric" autocomplete="off" placeholder="Escribí el número">
     ${m.err?'<span class="err">Ese número no es. Probá otra vez.</span>':''}
     <div class="mrow"><button class="btn" type="submit">Continuar</button><button class="btn sec" type="button" data-act="close">Cancelar</button></div></form>`;
-  else if(m.type==='pay') inner=`<span class="eyebrow">Lunita Ilimitado · muy pronto</span><h2 id="mTitle">Todavía no está a la venta</h2>
-    <div class="price"><b>${PRICE}</b><span>por mes, precio previsto</span></div>
+  else if(m.type==='pay') inner=`<span class="eyebrow">Lunita Ilimitado</span><h2 id="mTitle">Todos los cuentos, cada noche</h2>
+    <div class="price"><b>${PRICE}</b><span>por mes</span></div>
     <ul class="perks"><li>${listText}, y los cuentos nuevos que se sumen a la biblioteca</li><li>Aviso de la hora del cuento, mientras Lunita esté abierta</li><li>Sin publicidad</li></ul>
-    <p>Estamos terminando de prepararlo. Si querés que te avisemos cuando esté listo, escribinos y te respondemos con la novedad.</p>
-    <div class="mrow"><a class="btn" href="${AVISAME_HREF}">Avisame cuando esté listo</a><button class="btn sec" data-act="close">Ahora no</button></div>
-    <p class="fine">Todavía no se cobra nada. Cuando esté lista: un pago por mes con Mercado Pago, sin período de prueba (ya podés leer dos cuentos gratis). Se cancela cuando quieras desde tu cuenta de Mercado Pago, y seguís teniendo los cuentos hasta el final del mes que ya pagaste.</p>
-    <p class="fine">Al escribirnos recibimos tu dirección de mail, y solo la usamos para avisarte del lanzamiento.</p>
+    <p><b>1.</b> Tocá “Suscribirme” y pagá en Mercado Pago. <b>2.</b> Volvé acá y tocá “Ya pagué, activar” con el mail que usaste para pagar.</p>
+    <div class="mrow"><a class="btn" href="${COBRO.PLAN_URL}" target="_blank" rel="noopener">Suscribirme</a><button class="btn sec" data-act="activar-abrir">Ya pagué, activar</button></div>
+    <p class="fine">Un pago por mes con Mercado Pago, sin período de prueba (ya podés leer dos cuentos gratis). Se cancela cuando quieras desde tu cuenta de Mercado Pago, y seguís teniendo los cuentos hasta el final del mes que ya pagaste. Lunita no ve ni guarda los datos de tu tarjeta.</p>
+    <p class="fine">El acceso se activa en cada celular o navegador: si cambiás de dispositivo, tocá de nuevo “Ya pagué, activar”.</p>
+    <button class="linkbtn" data-act="privacy">Privacidad y quiénes somos</button><button class="linkbtn" data-act="close">Ahora no</button>`;
+  else if(m.type==='activar') inner=`<span class="eyebrow">Activar Lunita Ilimitado</span><h2 id="mTitle">¿Con qué mail pagaste?</h2>
+    <form id="activarForm" class="cg" novalidate><label for="activarIn" class="gate-q">Escribí el mismo mail que usaste en Mercado Pago.</label>
+    <input id="activarIn" type="email" inputmode="email" autocomplete="email" placeholder="tu@mail.com" value="${(m.email||'').replace(/"/g,'&quot;')}">
+    ${m.msg?`<span class="err" role="alert">${m.msg}</span>`:''}
+    <div class="mrow"><button class="btn" type="submit"${m.espera?' disabled':''}>${m.espera?'Comprobando…':'Activar'}</button><button class="btn sec" type="button" data-act="close">Cancelar</button></div></form>
+    <p class="fine">Mandamos ese mail a Lunita y a Mercado Pago solo para comprobar el pago. Lo guardamos en este dispositivo para renovar el acceso solo; no lo guardamos en ningún servidor de Lunita.</p>
     <button class="linkbtn" data-act="privacy">Privacidad y quiénes somos</button>`;
   else if(m.type==='priv') inner=`<span class="eyebrow">Privacidad y quiénes somos</span><h2 id="mTitle">Cuidamos lo que nos cuentan</h2>
     <div class="priv cg">
     <h3>Quiénes somos</h3><p>Lunita es un proyecto independiente de cuentos para dormir, hecho en Argentina. Es una app para que las familias lean juntas: los cuentos los eligen y los compran los adultos.</p>
-    <h3>Qué se guarda</h3><p>El nombre que escribas para el personaje, cómo lo armaste, qué finales descubrieron, si activaron el plan y la hora del aviso. <b>Se guarda solo en este dispositivo</b>, en tu navegador. No hay cuentas, y no te pedimos mail, fotos ni datos de los chicos.</p>
-    <h3>Qué no hacemos</h3><p>No enviamos esos datos a ningún servidor. No usamos cookies, publicidad ni herramientas de seguimiento, y no vendemos ni compartimos datos.</p>
-    <h3>Sitio web</h3><p>Las letras y las imágenes están guardadas en la propia app, sin pedirlas a otras empresas. Como cualquier sitio web, el servicio donde está publicada puede registrar datos técnicos de las visitas, como la dirección IP.</p>
+    <h3>Qué se guarda</h3><p>El nombre que escribas para el personaje, cómo lo armaste, qué finales descubrieron y la hora del aviso. Si activás Lunita Ilimitado, también guardamos <b>el mail con el que pagaste y un permiso de acceso</b>, para renovarlo solos cada mes. <b>Todo se guarda solo en este dispositivo</b>, en tu navegador. No hay cuentas, y no te pedimos fotos ni datos de los chicos.</p>
+    <h3>Qué no hacemos</h3><p>No usamos cookies, publicidad ni herramientas de seguimiento, y no vendemos ni compartimos datos. Lo único que enviamos a un servidor es el mail de pago, solo cuando activás o renovás Lunita Ilimitado (mirá “Pagos”).</p>
+    <h3>Sitio web</h3><p>Las letras y las imágenes están guardadas en la propia app, sin pedirlas a otras empresas. Como cualquier sitio web, el servicio donde está publicada puede registrar datos técnicos de las visitas, como la dirección IP. La función que comprueba los pagos está alojada en Cloudflare, que también puede registrar datos técnicos de la consulta.</p>
     <h3>Lectura en voz alta</h3><p>La función de escuchar el cuento usa la voz de tu dispositivo o de tu navegador. Según cuál sea, puede procesar el texto en línea. Si preferís evitarlo, no la uses.</p>
-    <h3>Aviso de lanzamiento</h3><p>Si nos escribís para que te avisemos cuando esté lista la suscripción, recibimos tu dirección de mail. La usamos solo para avisarte, no la compartimos, y la borramos cuando lo pidas.</p>
-    <h3>Pagos</h3><p>Cuando el cobro esté activo, lo hará Mercado Pago. Lunita no ve ni guarda los datos de tu tarjeta.</p>
-    <h3>Borrar tus datos</h3><p>Podés borrar todo lo guardado en este dispositivo cuando quieras.</p>
+    <h3>Aviso de novedades</h3><p>Si nos escribís para que te avisemos de cuentos nuevos, recibimos tu mail. Lo usamos solo para eso, no lo compartimos y lo borramos cuando lo pidas.</p>
+    <h3>Pagos</h3><p>El pago lo hace Mercado Pago: Lunita no ve ni guarda los datos de tu tarjeta. Para activar Lunita Ilimitado, la app le manda el mail que escribas a una función de Lunita, que se lo consulta a Mercado Pago para comprobar que tu suscripción esté vigente. Esa función no guarda el mail ni lo escribe en registros, y responde con un permiso de acceso que queda en tu dispositivo. Mercado Pago trata esos datos según su propia política. Cuando se acerca el vencimiento del permiso, la app repite la consulta sola.</p>
+    <h3>Borrar tus datos</h3><p>Podés borrar todo lo guardado en este dispositivo cuando quieras, incluido el mail y el permiso. Al borrarlos se cierran los cuentos con suscripción en este dispositivo; podés volver a activarlos con el mismo mail mientras tu suscripción esté vigente.</p>
     <h3>Contacto</h3><p>${CONTACT_EMAIL?`Escribinos a <b>${CONTACT_EMAIL}</b>.`:'El mail de contacto se publica antes del lanzamiento.'}</p>
-    <p class="fine"><a href="privacidad.html" target="_blank" rel="noopener">Leer la política completa</a> · Versión de prueba · actualizada en noviembre de 2026.</p></div>
+    <p class="fine"><a href="privacidad.html" target="_blank" rel="noopener">Leer la política completa</a> · Actualizada en noviembre de 2026.</p></div>
     <div class="mrow"><button class="btn sec" data-act="wipe">${m.wipe?'Tocá otra vez para borrar':'Borrar los datos de este dispositivo'}</button><button class="btn" data-act="close">Cerrar</button></div>`;
   else if(m.type==='done'){const nx=m.next||PREMIUM[0];inner=`<span class="eyebrow">¡Listo!</span><h2 id="mTitle">Lunita Ilimitado activado</h2>
     <p>Ya tienen ${PREMIUM.length} cuentos nuevos en la biblioteca y pueden configurar el aviso de la noche.</p>
@@ -2034,10 +2041,53 @@ function renderModal(){
   else if(lastFocus&&document.contains(lastFocus)){lastFocus.focus();lastFocus=null}
 }
 function closeModal(){S.modal=null;renderModal()}
+
+/* ===== Cobro: permiso firmado (la función de Lunita lo emite si Mercado Pago confirma el pago) ===== */
+const PERMISO_KEY='lunita_permiso';
+const MSG_COBRO={no_encontrada:'No encontramos una suscripción con ese mail. Probá con el mail de tu cuenta de Mercado Pago (puede ser distinto del que usás todos los días). Si ya pagaste y sigue sin andar, escribinos a '+CONTACT_EMAIL+' con el mail que usaste.',pendiente:'Mercado Pago todavía no confirmó el pago. Probá de nuevo en unos minutos.',vencida:'Esa suscripción ya no está vigente. Podés suscribirte de nuevo.',mail_invalido:'Ese mail no parece estar bien escrito.',mp_no_responde:'No pudimos comprobar el pago ahora. Probá de nuevo en un rato.',red:'No hay conexión con Lunita. Revisá tu internet y probá de nuevo.',otro:'Algo salió mal. Probá de nuevo en un rato.'};
+function b64uBytes(t){const b=atob(t.replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(b,c=>c.charCodeAt(0))}
+async function verificarPermiso(token){
+  try{
+    const [parte,firma]=String(token).split('.');if(!parte||!firma) return null;
+    const clave=await crypto.subtle.importKey('jwk',COBRO.CLAVE,{name:'ECDSA',namedCurve:'P-256'},false,['verify']);
+    const ok=await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},clave,b64uBytes(firma),new TextEncoder().encode(parte));
+    if(!ok) return null;
+    const c=JSON.parse(new TextDecoder().decode(b64uBytes(parte)));
+    return c&&c.v===1&&c.p==='lunita-ilimitado'&&typeof c.exp==='number'?c:null;
+  }catch(e){return null}
+}
+function leerPermiso(){try{return JSON.parse(localStorage.getItem(PERMISO_KEY)||'null')}catch(e){return null}}
+function guardarPermiso(o){try{o?localStorage.setItem(PERMISO_KEY,JSON.stringify(o)):localStorage.removeItem(PERMISO_KEY)}catch(e){}}
+/** Pide un permiso a la función. Devuelve {ok:true} o {ok:false,motivo}. Solo un permiso con firma válida y no vencido abre los cuentos. */
+async function pedirPermiso(email){
+  let r;
+  try{
+    const res=await fetch(COBRO.API.replace(/\/$/,'')+'/activar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+    r=await res.json();
+  }catch(e){return {ok:false,motivo:'red'}}
+  if(!r||!r.ok) return {ok:false,motivo:(r&&r.motivo)||'otro'};
+  const c=await verificarPermiso(r.token);
+  if(!c||c.exp*1000<=Date.now()) return {ok:false,motivo:'otro'};
+  guardarPermiso({token:r.token,email:email.trim().toLowerCase()});
+  return {ok:true,exp:c.exp};
+}
+/** Al abrir la app: si hay un permiso guardado y vale, se abren los cuentos; si falta poco para que venza, se renueva sin molestar. */
+async function restaurarPermiso(){
+  
+  const g=leerPermiso();if(!g||!g.token) return;
+  const c=await verificarPermiso(g.token);
+  const vigente=!!c&&c.exp*1000>Date.now();
+  if(vigente){S.subscribed=true;render()}
+  if(!c||c.exp*1000-Date.now()<7*864e5){
+    const n=await pedirPermiso(g.email);
+    if(n.ok){S.subscribed=true;render()}
+    else if(!vigente&&['no_encontrada','vencida'].includes(n.motivo)){guardarPermiso(null);S.subscribed=false;render()}   // solo se cierra si Mercado Pago confirma que ya no vale
+  }
+}
 function openPremium(id){
   if(S.subscribed){startStory(id);return}
   S.pending=id;
-  if(ETAPA_0||S.gatePassed){S.modal={type:'pay'}}
+  if(S.gatePassed){S.modal={type:'pay'}}
   else{const a=21+Math.floor(Math.random()*29),b=21+Math.floor(Math.random()*29);S.modal={type:'gate',a,b,err:false}}
   renderModal();
 }
@@ -2145,10 +2195,11 @@ document.addEventListener('click',e=>{
     const r=document.getElementById('reader');if(r) r.scrollIntoView({block:'start'});
   }
   else if(act==='subscribe'){S.subscribed=true;save();S.modal={type:'done',next:S.pending||PREMIUM[0]};renderModal();if(S.screen==='home')render()}
+  else if(act==='activar-abrir'){const g=leerPermiso();S.modal={type:'activar',email:g&&g.email||'',msg:'',espera:false};renderModal()}
   else if(act==='close') closeModal();
   else if(act==='consulta'){S.consulta=el.dataset.v;render();window.scrollTo(0,0)}
   else if(act==='privacy'){S.modal={type:'priv',wipe:false};renderModal()}
-  else if(act==='wipe'){if(S.modal&&S.modal.wipe){try{localStorage.removeItem('lunita')}catch(e){}location.reload()}else if(S.modal){S.modal.wipe=true;renderModal()}}
+  else if(act==='wipe'){if(S.modal&&S.modal.wipe){try{localStorage.removeItem('lunita');localStorage.removeItem(PERMISO_KEY)}catch(e){}location.reload()}else if(S.modal){S.modal.wipe=true;renderModal()}}
   else if(act==='rem-toggle'){
     S.reminder.on=!S.reminder.on;save();
     el.setAttribute('aria-pressed',String(S.reminder.on));el.textContent=S.reminder.on?'Aviso activado':'Aviso apagado';
@@ -2156,7 +2207,16 @@ document.addEventListener('click',e=>{
   else if(act==='rem-test') showToast();
   else if(act==='toast-open'){hideToast();startStory(tonight().id)}
 });
-document.addEventListener('submit',e=>{
+document.addEventListener('submit',async e=>{
+  if(e.target.id==='activarForm'){
+    e.preventDefault();if(!S.modal||S.modal.espera) return;
+    const email=document.getElementById('activarIn').value.trim();
+    S.modal={type:'activar',email,msg:'',espera:true};renderModal();
+    const r=await pedirPermiso(email);
+    if(r.ok){S.subscribed=true;save();S.modal={type:'done',next:S.pending||PREMIUM[0]};renderModal();if(S.screen==='home')render()}
+    else{S.modal={type:'activar',email,msg:MSG_COBRO[r.motivo]||MSG_COBRO.otro,espera:false};renderModal()}
+    return;
+  }
   if(e.target.id!=='gateForm') return;
   e.preventDefault();
   const v=Number(document.getElementById('gateIn').value.trim());
@@ -2172,8 +2232,8 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.modal) closeModal
 
 function start(data){
   if(data&&data.cfg){Object.assign(S,data);S.modal=null;S.audio=false;S.endings=Object.assign({luna:[],tortuga:[],ceibo:[],pichon:[],dibujos:[],futbol:[],mundo:[]},S.endings)}else load();
-  if(ACCESO_PRUEBA) S.subscribed=true;
   render();renderModal();
+  restaurarPermiso();
 }
 window.claude?.hot?.snapshot?.(()=>({...S,modal:null,audio:false}));
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
