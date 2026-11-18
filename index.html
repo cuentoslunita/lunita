@@ -1479,7 +1479,7 @@ const STORIES={
       g1:{step:1,scene:'casa',
         text:()=>P(`Esa noche, ${N()} estaba por apagar la luz cuando escuchó algo raro debajo de la ventana: un cuac que sonaba como una trompetita triste.`)+
           P(`Era un pichón de pato grandote, gris y un poco despeinado, con unas patas enormes y los ojos llenos de lágrimas. Lo había encontrado ${CF()}, en el camino.`)+
-          P(`—Me llamo Grisi —dijo el pichón, sorbiéndose los mocos—. En la laguna todos se ríen de mí. Dicen que soy el patito más raro del mundo. Así que me fui… pero no sé adónde ir.`),
+          P(`—Me llamo Grisi —dijo el pichón, limpiándose las lágrimas con el ala—. En la laguna todos se ríen de mí. Dicen que soy el patito más raro del mundo. Así que me fui… pero no sé adónde ir.`),
         q:()=>`¿Qué hace ${N()}?`,
         choices:[
           {t:()=>'Abrigarlo con la manta y decirle que es lindo así como es',tr:'bondad',go:'g2'},
@@ -1492,19 +1492,19 @@ const STORIES={
             valentia:P(`—Vamos a encontrar un lugar donde te quieran —dijo ${N()}. Se puso las zapatillas, y ${C()} se ofreció a mostrarles el camino.`),
             ingenio:P(`—¿Qué es lo que mejor sabés hacer? —preguntó ${N()}. Grisi lo pensó un rato. —Nadar —dijo—. Nado mejor que nadie. Pero eso no le importa a nadie.`)
           })[S.path[0]]+
-          P(`Caminaron hasta una granja donde vivían una gallina muy estirada y un gato muy serio. Los dos miraron a Grisi de arriba abajo.`)+
-          P(`—¿Sabés poner huevos? —preguntó la gallina. —¿Sabés ronronear? —preguntó el gato. Grisi dijo que no con la cabeza. —Entonces no servís para nada —dijeron los dos, y se dieron vuelta.`),
+          P(`${C()} dijo que conocía una granja cerca, y fueron hasta ahí. Allí vivían una gallina muy creída y un gato muy serio. Los dos miraron a Grisi de arriba abajo.`)+
+          P(`—¿Sabés poner huevos? —preguntó la gallina. —¿Sabés ronronear? —preguntó el gato. Grisi dijo que no con la cabeza. —Entonces no sos de los nuestros —dijeron los dos, y se dieron vuelta.`),
         q:()=>`¿Qué hace ${N()}?`,
         choices:[
           {t:()=>'Defender a Grisi: cada uno sabe hacer cosas distintas',tr:'valentia',go:'g3a'},
-          {t:()=>'Preguntarles a ellos si saben nadar',tr:'ingenio',go:'g3a'},
+          {t:()=>'Proponerles que vean lo que Grisi sí sabe hacer',tr:'ingenio',go:'g3a'},
           {t:()=>'Llevarse a Grisi a un estanque escondido y hacerlo reír',tr:'bondad',go:'g3b'}
         ]},
       g3a:{step:3,scene:'granja_nado',
         text:()=>(S.path[1]==='valentia'
             ?P(`—¡Eso no es justo! —dijo ${N()}, con los pies bien plantados—. Cada uno sabe hacer cosas distintas.`)
-            :P(`—¿Y ustedes saben nadar? —preguntó ${N()}. La gallina y el gato se miraron. —No —admitieron, un poco avergonzados.`))+
-          P(`Grisi se metió en el bebedero y dio una vuelta tan elegante que el gato abrió la boca y a la gallina se le cayó una pluma. —Perdón —dijo la gallina—. Nos apuramos a juzgarte.`)+
+            :P(`——Grisi sabe hacer algo que ustedes no vieron —dijo ${N()}—. ¿Quieren verlo? La gallina y el gato se miraron. —Bueno —dijeron, con curiosidad.`))+
+          P(`Grisi se metió en el bebedero y dio una vuelta tan elegante que el gato abrió la boca y a la gallina se le cayó una pluma. —Perdón —dijo la gallina—. Pensamos mal de vos sin conocerte.`)+
           P(`—Ahora que te veo nadar —dijo el gato—, me acuerdo de unas aves grandes y blancas que viven en el lago, detrás de las lomas. Nadan igualito a vos.`),
         q:()=>'¿Qué hacen ahora?',
         choices:[
@@ -1514,14 +1514,14 @@ const STORIES={
       g3b:{step:3,scene:'laguna',
         text:()=>P(`En el estanque, ${N()} se puso a saltar como una rana, con los cachetes inflados: croac, croac. Grisi se rió tan fuerte que se cayó al agua: ¡plaf!`)+
           P(`Y entonces pasó algo: Grisi nadó. Se deslizó por el estanque tan suave y tan derecho que parecía flotar sobre el reflejo de la luna.`)+
-          P(`Una rana de verdad croó desde un camalote: —Vos no nadás como un pato. Nadás como las aves blancas del lago grande, el que está detrás de las lomas.`)+P(`Grisi se quedó quieto. —¿Y si ellas también se ríen de mí? —preguntó bajito.`),
+          P(`Una rana de verdad croó desde una planta flotante: —Vos no nadás como un pato. Nadás como las aves blancas del lago grande, el que está detrás de las lomas.`)+P(`Grisi se quedó quieto. —¿Y si ellas también se ríen de mí? —preguntó bajito.`),
         q:()=>`¿Qué le dice ${N()}?`,
         choices:[
           {t:()=>'Prometerle que van juntos y, si se ríen, vuelven juntos',tr:'bondad',go:'g4'},
           {t:()=>'Decirle que lo nuevo da miedo, pero que vale la pena',tr:'valentia',go:'g4'}
         ]},
       g4:{step:4,scene:'lago',
-        text:()=>P(`${C()} los guió entre las lomas hasta que apareció el lago grande, brillando bajo la luna. En el medio nadaban unas aves blancas con el cuello negro, largo como un signo de pregunta. Eran cisnes de cuello negro, y eran hermosos.`)+
+        text:()=>P(`${S.path[1]==='bondad'?(S.path[2]==='bondad'?`${N()} y Grisi caminaron uno al lado del otro entre las lomas, con ${C()} adelante,`:`Grisi respiró hondo y siguió a ${C()} entre las lomas,`):(S.path[2]==='valentia'?`Salieron enseguida hacia las lomas, aunque el camino era largo, y ${C()} los guió`:`Siguieron el camino que el gato dibujó en la tierra, y ${C()} los guió entre las lomas`)} hasta que apareció el lago grande, brillando bajo la luna. En el medio nadaban unas aves blancas con el cuello negro, largo como un signo de pregunta. Eran cisnes de cuello negro, y eran lindísimos.`)+
           P(`Grisi se escondió detrás de ${N()}. —Yo soy gris y despeinado —susurró—. No me van a querer.`)+
           P(`Pero los cisnes ya los habían visto, y venían nadando despacito hacia la orilla.`),
         q:()=>'La última decisión',
@@ -1538,12 +1538,12 @@ const STORIES={
         P(`—¡Algún día voy a volar hasta tu ventana! —le gritó a ${N()} desde el cielo. Y ${N()} se fue a dormir ${G('segura','seguro','con la certeza')} de que lo iba a cumplir.`)},
       bondad:{title:'El final de la nueva familia',text:()=>(({valentia:P(`${N()} caminó con Grisi hasta el agua, bien a su lado. Cuando los cisnes llegaron a la orilla, respiró hondo.`),ingenio:P(`Grisi saludó con un cuac de trompeta, chiquito y tímido, y los cisnes se acercaron a ver quién era.`)})[S.path[3]]||'')+P(`—Este es Grisi —dijo ${N()}—. Es mi amigo, y nada como nadie.`)+
         P(`Los cisnes lo rodearon con sus cuellos largos, como en un abrazo. —¡Un pichón de cisne! —dijeron—. Nosotros también fuimos grises de chiquitos. Te estábamos esperando.`)+
-        P(`Grisi se acurrucó debajo del ala del cisne más viejito, tibia como una frazada. Antes de dormirse, abrió un ojo. —Gracias por quererme antes de saber quién era —le dijo a ${N()}.`)+
+        P(`Grisi se acurrucó debajo del ala del cisne más viejito, tibia como una mantita. Antes de dormirse, abrió un ojo. —Gracias por quererme antes de saber quién era —le dijo a ${N()}.`)+
         P(`${N()} volvió a casa con el corazón calentito. A veces alcanza con que alguien te diga que sos lindo así como sos.`)},
       ingenio:{title:'El final del cuac de trompeta',text:()=>(({valentia:P(`${N()} caminó con Grisi hasta el agua, bien a su lado. Los cisnes ya estaban cerca, pero Grisi no se animaba a decir nada.`),bondad:P(`—Este es Grisi, y nada como nadie —dijo ${N()}. Los cisnes lo miraron con curiosidad, esperando que dijera algo.`)})[S.path[3]]||'')+P(`—Saludalos a tu manera —le dijo ${N()}—. Con tu cuac de trompeta.`)+
         P(`Grisi tomó aire y lanzó un ¡TRUUU-CUAC! que se escuchó en todo el lago. Hubo un silencio. Y después, todos los cisnes contestaron con el mismo sonido: ¡TRUUU, TRUUU!`)+
         P(`—¡Es la voz de los cisnes! —dijo el más grande—. Sos uno de los nuestros. Nosotros también fuimos grises de chiquitos.`)+
-        P(`Esa noche los cisnes cantaron hasta tarde, y desde la granja, la gallina y el gato escucharon el concierto. ${N()} se durmió pensando que lo que nos hace distintos, muchas veces, es justo lo que nos hace especiales.`)}
+        P(`Esa noche los cisnes cantaron hasta tarde, y desde la granja, la gallina y el gato escucharon el concierto. ${N()} se durmió pensando que ser distinto puede ser lo más lindo de uno.`)}
     }
   },
   dibujos:{
