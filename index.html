@@ -346,6 +346,8 @@ button.card:hover{transform:translateY(-3px) rotate(-.6deg)}
 .linkbtn{background:none;border:0;padding:4px 0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-weight:700;font-size:.9rem}
 .priv h3{margin:6px 0 0;font-family:var(--f-display);font-size:1.05rem;color:var(--ink)}
 .priv p{margin:0;font-size:.95rem}
+a.btn{display:inline-block;text-decoration:none}
+.modal .linkbtn{color:var(--ink-soft)}
 .medalsbox{margin-top:16px}
 .medalsbox summary{cursor:pointer;display:inline-block;color:var(--ink-soft);font-family:var(--f-display);font-weight:700;padding:6px 2px;list-style:none;text-decoration:underline;text-underline-offset:3px}
 .medalsbox summary::-webkit-details-marker{display:none}
@@ -390,6 +392,9 @@ button.card:hover{transform:translateY(-3px) rotate(-.6deg)}
 /* ===== Configuración ===== */
 const PRICE='$2.500';
 const CONTACT_EMAIL='cuentoslunita@gmail.com';
+const AVISAME_HREF='mailto:'+CONTACT_EMAIL+'?subject=Avisame%20cuando%20Lunita%20Ilimitado%20est%C3%A9%20listo&body=Hola%21%20Quiero%20que%20me%20avisen%20cuando%20est%C3%A9%20lista%20la%20suscripci%C3%B3n%20de%20Lunita.';
+/* Etapa 0: todavía no se cobra. Los cuentos con suscripción están cerrados; con ?acceso=prueba en el link se abren para probarlos (sacar esta puerta antes de cobrar). */
+const ACCESO_PRUEBA=/[?&]acceso=prueba(&|$)/.test(location.search);
 const NAME_FALLBACK='Peque';
 
 /* ===== Opciones del personaje ===== */
@@ -444,7 +449,7 @@ function load(){
       if(d.cfg) Object.assign(S.cfg,d.cfg);
       if(Array.isArray(d.endings)) S.endings.luna=d.endings;
       else if(d.endings) Object.assign(S.endings,d.endings);
-      S.subscribed=!!d.subscribed;S.big=!!d.big;
+      S.subscribed=false;   // etapa 0: aunque el navegador guarde un plan del piloto anterior, no valeS.big=!!d.big;
       if(d.reminder) S.reminder=Object.assign({on:true,time:'20:30'},d.reminder);
       S.lastNotified=d.lastNotified||'';
     }
@@ -1867,7 +1872,7 @@ function reminderHTML(){
     ?`<div class="ctrl"><button class="chip" data-act="rem-toggle" aria-pressed="${r.on}">${r.on?'Aviso activado':'Aviso apagado'}</button><label for="remTime" class="lab">a las</label><input type="time" id="remTime" class="time-in" value="${r.time}"></div>
       <div class="ctrl"><button class="btn sec" data-act="rem-test">Probar el aviso</button></div>
       <p class="fine">En la versión web, el aviso aparece si Lunita está abierta a esa hora. En la app del celular llega como notificación, aunque el teléfono esté bloqueado.</p>`
-    :`<div class="ctrl"><button class="btn" data-act="premium" data-id="tortuga">Activarlo con Lunita Ilimitado</button></div>`;
+    :`<div class="ctrl"><button class="btn" data-act="premium" data-id="tortuga">Disponible con Lunita Ilimitado, muy pronto</button></div>`;
   return `<div class="step"><span class="num blue">${ICON.bell}</span><b>El aviso de la noche</b></div>
   <div class="remind"><div class="copy"><h3>Un aviso a la hora de ir a la cama</h3><p>Elegí la hora y Lunita te recuerda que es momento del cuento, con el de esa noche listo para ${N()}.</p>${ctrl}</div>
     <div class="lock-screen" role="img" aria-label="Así se ve el aviso en el celular"><div class="clock" id="remClock">${r.time}</div><div class="date">${date.charAt(0).toUpperCase()+date.slice(1)}</div>${notifHTML(false)}</div></div>`;
@@ -1890,7 +1895,7 @@ setInterval(()=>{
 function storyCard(id,feature){
   const st=STORIES[id],found=(S.endings[id]||[]).length,locked=!st.free&&!S.subscribed;
   const [c,cd]=THEMES[id];
-  const sticker=st.free?'Gratis':(S.subscribed?'En tu plan':'Ilimitado');
+  const sticker=st.free?'Gratis':(S.subscribed?'En tu plan':'Muy pronto');
   const meta=`<div class="meta"><span class="tag">4 decisiones</span><span class="tag">Finales: ${found} de 3</span></div>`;
   const style=`style="--c:${c};--cd:${cd}"`;
   if(feature) return `<div class="card feature" ${style}><span class="sticker">${sticker}</span>${cover(id)}<div class="info"><h3>${st.title}</h3><p class="src">${st.blurb}</p><p class="src">${st.src}.</p>${meta}<button class="go" data-act="read" data-id="${id}">Leer ahora</button></div></div>`;
@@ -1930,10 +1935,10 @@ function homeHTML(){
   ${reminderHTML()}
   <div class="how">
     <div><b>${FREE_TITLE}</b><p>${FREE_TEXT}</p></div>
-    <div><b>${PRICE} por mes</b><p>Desbloquea ${PREMIUM.length} cuentos más y el aviso de la noche. Se paga con Mercado Pago y se cancela cuando quieras.</p>${S.subscribed?'':`<button class="btn sec" data-act="premium" data-id="${PREMIUM[0]}">Ver la suscripción</button>`}</div>
+    <div><b>Lunita Ilimitado, muy pronto</b><p>Estamos preparando la suscripción: ${PREMIUM.length} cuentos más y el aviso de la noche, por ${PRICE} al mes (precio previsto). Todavía no se cobra nada.</p>${S.subscribed?'':`<a class="btn sec" href="${AVISAME_HREF}">Avisame cuando esté listo</a>`}</div>
     <div><b>Pensado para dormir</b><p>Sin publicidad, con letra grande y lectura en voz alta.</p></div>
   </div>
-  <p class="note">Versión de prueba: el pago todavía no está conectado, así que la suscripción se activa sin cobrar. Los cuentos son originales de Lunita o adaptaciones libres de obras y leyendas en dominio público.</p>
+  <p class="note">Todavía no se cobra nada: Lunita Ilimitado está en preparación. Los cuentos son originales de Lunita o adaptaciones libres de obras y leyendas en dominio público.</p>
   <p class="note"><button class="linkbtn" data-act="privacy">Privacidad y quiénes somos</button></p>`;
 }
 function readerHTML(){
@@ -1977,12 +1982,12 @@ function modalHTML(){
     <form id="gateForm" class="cg" novalidate><label for="gateIn" class="gate-q">¿Cuánto es ${words(m.a)} más ${words(m.b)}?</label><input id="gateIn" inputmode="numeric" autocomplete="off" placeholder="Escribí el número">
     ${m.err?'<span class="err">Ese número no es. Probá otra vez.</span>':''}
     <div class="mrow"><button class="btn" type="submit">Continuar</button><button class="btn sec" type="button" data-act="close">Cancelar</button></div></form>`;
-  else if(m.type==='pay') inner=`<span class="eyebrow">Lunita Ilimitado</span><h2 id="mTitle">Más cuentos para la hora de dormir</h2>
-    <div class="price"><b>${PRICE}</b><span>por mes</span></div>
+  else if(m.type==='pay') inner=`<span class="eyebrow">Lunita Ilimitado · muy pronto</span><h2 id="mTitle">Todavía no está a la venta</h2>
+    <div class="price"><b>${PRICE}</b><span>por mes, precio previsto</span></div>
     <ul class="perks"><li>${listText}, y los cuentos nuevos que se sumen a la biblioteca</li><li>Aviso a la hora de dormir, con el cuento de la noche</li><li>Sin publicidad</li></ul>
-    <div class="mrow"><button class="btn" data-act="subscribe">Suscribirme</button><button class="btn sec" data-act="close">Ahora no</button></div>
-    <p class="fine">Cuando el cobro esté activo: un solo pago por mes con Mercado Pago, que se cancela cuando quieras desde tu cuenta de Mercado Pago, sin llamar a nadie.</p>
-    <p class="fine">Hoy es una versión de prueba: no se cobra, y al tocar Suscribirme el plan se activa solo en este dispositivo.</p>
+    <p>Estamos terminando de prepararlo. Si querés que te avisemos cuando esté listo, escribinos y te respondemos con la novedad.</p>
+    <div class="mrow"><a class="btn" href="${AVISAME_HREF}">Avisame cuando esté listo</a><button class="btn sec" data-act="close">Ahora no</button></div>
+    <p class="fine">Todavía no se cobra nada. Cuando esté lista, se paga con Mercado Pago y se cancela cuando quieras. Al escribirnos recibimos tu dirección de mail, y solo la usamos para avisarte del lanzamiento.</p>
     <button class="linkbtn" data-act="privacy">Privacidad y quiénes somos</button>`;
   else if(m.type==='priv') inner=`<span class="eyebrow">Privacidad y quiénes somos</span><h2 id="mTitle">Cuidamos lo que nos cuentan</h2>
     <div class="priv cg">
@@ -1990,6 +1995,7 @@ function modalHTML(){
     <h3>Qué se guarda</h3><p>El nombre que escribas para el personaje, cómo lo armaste, qué finales descubrieron, si activaron el plan y la hora del aviso. <b>Se guarda solo en este dispositivo</b>, en tu navegador. No hay cuentas, y no te pedimos mail, fotos ni datos de los chicos.</p>
     <h3>Qué no hacemos</h3><p>No enviamos esos datos a ningún servidor. No usamos cookies, publicidad ni herramientas de seguimiento, y no vendemos ni compartimos datos.</p>
     <h3>Sitio web</h3><p>Las letras y las imágenes están guardadas en la propia app, sin pedirlas a otras empresas. Como cualquier sitio web, el servicio donde está publicada puede registrar datos técnicos de las visitas, como la dirección IP.</p>
+    <h3>Aviso de lanzamiento</h3><p>Si nos escribís para que te avisemos cuando esté lista la suscripción, recibimos tu dirección de mail. La usamos solo para avisarte, no la compartimos, y la borramos cuando lo pidas.</p>
     <h3>Pagos</h3><p>Cuando el cobro esté activo, lo hará Mercado Pago. Lunita no ve ni guarda los datos de tu tarjeta.</p>
     <h3>Borrar tus datos</h3><p>Podés borrar todo lo guardado en este dispositivo cuando quieras.</p>
     <h3>Contacto</h3><p>${CONTACT_EMAIL?`Escribinos a <b>${CONTACT_EMAIL}</b>.`:'El mail de contacto se publica antes del lanzamiento.'}</p>
@@ -2146,6 +2152,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.modal) closeModal
 
 function start(data){
   if(data&&data.cfg){Object.assign(S,data);S.modal=null;S.audio=false;S.endings=Object.assign({luna:[],tortuga:[],ceibo:[],pichon:[],dibujos:[],futbol:[],mundo:[]},S.endings)}else load();
+  if(ACCESO_PRUEBA) S.subscribed=true;
   render();renderModal();
 }
 window.claude?.hot?.snapshot?.(()=>({...S,modal:null,audio:false}));
