@@ -1,5 +1,17 @@
+<!doctype html>
+<html lang="es"><head>
 <meta charset="utf-8">
-<title>Lunita Piloto Ilustrado</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1b1e4b">
+<title>Lunita · Cuentos para dormir</title>
+<meta name="description" content="Cuentos para dormir donde tu peque es el protagonista y elige cómo sigue la historia.">
+<link rel="icon" type="image/webp" href="arte/ui/logo.webp">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Lunita · Cuentos para dormir">
+<meta property="og:description" content="Tu peque es el protagonista y elige cómo sigue el cuento. Cada decisión lleva a un final distinto.">
+<meta property="og:image" content="https://cuentoslunita.github.io/lunita/arte/ui/portada.webp">
+<meta property="og:url" content="https://cuentoslunita.github.io/lunita/">
+<meta property="og:locale" content="es_AR">
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
 /* Letras (Andika, Baloo 2 y Nunito, licencia SIL OFL) guardadas en la app: no se piden a Google */
@@ -394,6 +406,7 @@ const PRICE='$2.500';
 const CONTACT_EMAIL='cuentoslunita@gmail.com';
 const AVISAME_HREF='mailto:'+CONTACT_EMAIL+'?subject=Avisame%20cuando%20Lunita%20Ilimitado%20est%C3%A9%20listo&body=Hola%21%20Quiero%20que%20me%20avisen%20cuando%20est%C3%A9%20lista%20la%20suscripci%C3%B3n%20de%20Lunita.';
 /* Etapa 0: todavía no se cobra. Los cuentos con suscripción están cerrados; con ?acceso=prueba en el link se abren para probarlos (sacar esta puerta antes de cobrar). */
+const ETAPA_0=true;   // mientras no haya cobro, se muestra directo el aviso de que todavía no está a la venta (sin pregunta para adultos)
 const ACCESO_PRUEBA=/[?&]acceso=prueba(&|$)/.test(location.search);
 const NAME_FALLBACK='Peque';
 
@@ -1290,7 +1303,7 @@ const STORIES={
         choices:[{t:()=>'Ponerse las pantuflas y salir a buscarla',tr:'valentia',go:'n2'},{t:()=>`Preguntarle a ${C()} dónde la vio por última vez`,tr:'ingenio',go:'n2'}]},
       n2:{step:2,scene:'selva_miedo',text:()=>(S.path[0]==='ingenio'
             ?P(`—Cayó cerca del río grande —contó ${C()}—, pero para llegar hay que cruzar la selva.`)
-            :P(`Sin pensarlo dos veces, ${N()} saltó por la ventana detrás de ${C()}.`))+
+            :P(`${N()} salió por la puerta del jardín, junto a ${C()}, y juntos se metieron en la selva.`))+
           P(`La selva de noche suena distinto: grillos, hojas que se mueven, una rana que hace glup. Sin la luna, todo era sombra.`)+
           P(`Debajo de una hoja de güembé, ${N()} encontró un grupito de luciérnagas temblando. —Tenemos miedo —susurraron—. Sin la luna no nos animamos a brillar.`),
         q:()=>'¿Qué hacen con las luciérnagas?',
@@ -1809,7 +1822,7 @@ const STORIES={
       P(`${S.path[3]==='bondad'?'Para hacerles lugar':'Entonces'}${S.path[3]==='bondad'?`, ${N()} se corrió un poquito`:` ${N()} se corrió un poquito`}, ${C()} se corrió otro poquito, y en la punta de la colina apareció lugar para todos.`)+
       P(`Se sentaron juntos, bien apretaditos: Brillita, ${S.path[1]==='ingenio'?'Doña Vizcacha':'Don Caracol'}, ${C()} y ${N()}. Desde ahí, el mundo se veía todavía más lindo.`)+
       P(`—Qué suerte que nos encontramos —dijo ${S.path[1]==='ingenio'?'Doña Vizcacha':'Don Caracol'}—. Sin ayuda, no habría llegado nunca.`)+
-      P(`Brillita brilló tan fuerte de contenta que la colina entera se iluminó. Mamá siempre contaba que, cuando ${N()} llegó al mundo, muchas manos estuvieron para cuidar. Esa noche, el mapa los devolvió al cuarto, a su tamaño de siempre, y ${N()} se durmió pensando en lo lindo que es ser una de esas manos.${S.path[0]==='ingenio'?' El lápiz esperaba en la mesita, listo para la próxima.':''}`)},
+      P(`Brillita brilló tan fuerte de contenta que la colina entera se iluminó. En casa siempre contaban que, cuando ${N()} llegó al mundo, muchas manos estuvieron para cuidar. Esa noche, el mapa los devolvió al cuarto, a su tamaño de siempre, y ${N()} se durmió pensando en lo lindo que es ser una de esas manos.${S.path[0]==='ingenio'?' El lápiz esperaba en la mesita, listo para la próxima.':''}`)},
     ingenio:{title:'El final del mapa propio',text:()=>(({
         valentia:P(`Después de gritar con todas las fuerzas, ${N()} se quedó pensando: eran tantos lugares que no sabía por cuál empezar.`),
         bondad:P(`Cuando todos se acomodaron en la punta de la colina, ${N()} se quedó pensando: eran tantos lugares que no sabía por cuál empezar.`)
@@ -1871,10 +1884,10 @@ function reminderHTML(){
   const ctrl=S.subscribed
     ?`<div class="ctrl"><button class="chip" data-act="rem-toggle" aria-pressed="${r.on}">${r.on?'Aviso activado':'Aviso apagado'}</button><label for="remTime" class="lab">a las</label><input type="time" id="remTime" class="time-in" value="${r.time}"></div>
       <div class="ctrl"><button class="btn sec" data-act="rem-test">Probar el aviso</button></div>
-      <p class="fine">En la versión web, el aviso aparece si Lunita está abierta a esa hora. En la app del celular llega como notificación, aunque el teléfono esté bloqueado.</p>`
+      <p class="fine">En la web, el aviso aparece solo si Lunita está abierta a esa hora.</p>`
     :`<div class="ctrl"><button class="btn" data-act="premium" data-id="tortuga">Disponible con Lunita Ilimitado, muy pronto</button></div>`;
   return `<div class="step"><span class="num blue">${ICON.bell}</span><b>El aviso de la noche</b></div>
-  <div class="remind"><div class="copy"><h3>Un aviso a la hora de ir a la cama</h3><p>Elegí la hora y Lunita te recuerda que es momento del cuento, con el de esa noche listo para ${N()}.</p>${ctrl}</div>
+  <div class="remind"><div class="copy"><h3>Un aviso a la hora de ir a la cama</h3><p>Elegí la hora y Lunita te muestra el aviso, con el cuento de esa noche listo para ${N()}. En la web, el aviso aparece solo si Lunita está abierta a esa hora.</p>${ctrl}</div>
     <div class="lock-screen" role="img" aria-label="Así se ve el aviso en el celular"><div class="clock" id="remClock">${r.time}</div><div class="date">${date.charAt(0).toUpperCase()+date.slice(1)}</div>${notifHTML(false)}</div></div>`;
 }
 let toastTimer=0;
@@ -1895,7 +1908,7 @@ setInterval(()=>{
 function storyCard(id,feature){
   const st=STORIES[id],found=(S.endings[id]||[]).length,locked=!st.free&&!S.subscribed;
   const [c,cd]=THEMES[id];
-  const sticker=st.free?'Gratis':(S.subscribed?'En tu plan':'Muy pronto');
+  const sticker=st.free?'Gratis':(S.subscribed?'En tu plan':'Con Ilimitado');
   const meta=`<div class="meta"><span class="tag">4 decisiones</span><span class="tag">Finales: ${found} de 3</span></div>`;
   const style=`style="--c:${c};--cd:${cd}"`;
   if(feature) return `<div class="card feature" ${style}><span class="sticker">${sticker}</span>${cover(id)}<div class="info"><h3>${st.title}</h3><p class="src">${st.blurb}</p><p class="src">${st.src}.</p>${meta}<button class="go" data-act="read" data-id="${id}">Leer ahora</button></div></div>`;
@@ -1984,7 +1997,7 @@ function modalHTML(){
     <div class="mrow"><button class="btn" type="submit">Continuar</button><button class="btn sec" type="button" data-act="close">Cancelar</button></div></form>`;
   else if(m.type==='pay') inner=`<span class="eyebrow">Lunita Ilimitado · muy pronto</span><h2 id="mTitle">Todavía no está a la venta</h2>
     <div class="price"><b>${PRICE}</b><span>por mes, precio previsto</span></div>
-    <ul class="perks"><li>${listText}, y los cuentos nuevos que se sumen a la biblioteca</li><li>Aviso a la hora de dormir, con el cuento de la noche</li><li>Sin publicidad</li></ul>
+    <ul class="perks"><li>${listText}, y los cuentos nuevos que se sumen a la biblioteca</li><li>Aviso de la hora del cuento, mientras Lunita esté abierta</li><li>Sin publicidad</li></ul>
     <p>Estamos terminando de prepararlo. Si querés que te avisemos cuando esté listo, escribinos y te respondemos con la novedad.</p>
     <div class="mrow"><a class="btn" href="${AVISAME_HREF}">Avisame cuando esté listo</a><button class="btn sec" data-act="close">Ahora no</button></div>
     <p class="fine">Todavía no se cobra nada. Cuando esté lista, se paga con Mercado Pago y se cancela cuando quieras. Al escribirnos recibimos tu dirección de mail, y solo la usamos para avisarte del lanzamiento.</p>
@@ -1995,6 +2008,7 @@ function modalHTML(){
     <h3>Qué se guarda</h3><p>El nombre que escribas para el personaje, cómo lo armaste, qué finales descubrieron, si activaron el plan y la hora del aviso. <b>Se guarda solo en este dispositivo</b>, en tu navegador. No hay cuentas, y no te pedimos mail, fotos ni datos de los chicos.</p>
     <h3>Qué no hacemos</h3><p>No enviamos esos datos a ningún servidor. No usamos cookies, publicidad ni herramientas de seguimiento, y no vendemos ni compartimos datos.</p>
     <h3>Sitio web</h3><p>Las letras y las imágenes están guardadas en la propia app, sin pedirlas a otras empresas. Como cualquier sitio web, el servicio donde está publicada puede registrar datos técnicos de las visitas, como la dirección IP.</p>
+    <h3>Lectura en voz alta</h3><p>La función de escuchar el cuento usa la voz de tu dispositivo o de tu navegador. Según cuál sea, puede procesar el texto en línea. Si preferís evitarlo, no la uses.</p>
     <h3>Aviso de lanzamiento</h3><p>Si nos escribís para que te avisemos cuando esté lista la suscripción, recibimos tu dirección de mail. La usamos solo para avisarte, no la compartimos, y la borramos cuando lo pidas.</p>
     <h3>Pagos</h3><p>Cuando el cobro esté activo, lo hará Mercado Pago. Lunita no ve ni guarda los datos de tu tarjeta.</p>
     <h3>Borrar tus datos</h3><p>Podés borrar todo lo guardado en este dispositivo cuando quieras.</p>
@@ -2018,7 +2032,7 @@ function closeModal(){S.modal=null;renderModal()}
 function openPremium(id){
   if(S.subscribed){startStory(id);return}
   S.pending=id;
-  if(S.gatePassed){S.modal={type:'pay'}}
+  if(ETAPA_0||S.gatePassed){S.modal={type:'pay'}}
   else{const a=21+Math.floor(Math.random()*29),b=21+Math.floor(Math.random()*29);S.modal={type:'gate',a,b,err:false}}
   renderModal();
 }
