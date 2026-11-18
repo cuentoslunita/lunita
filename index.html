@@ -1472,7 +1472,7 @@ const STORIES={
     }
   },
   pichon:{
-    title:'El pichón gris',free:false,src:'Inspirado en El patito feo, de Hans Christian Andersen',
+    title:'El pichón gris',free:true,src:'Inspirado en El patito feo, de Hans Christian Andersen',
     blurb:'Un pichón grandote y despeinado que no encaja en ningún lado, y una noche para descubrir quién es.',
     start:'g1',endScene:'lago',
     nodes:{
@@ -1641,7 +1641,7 @@ const STORIES={
   }
 },
   futbol:{
-  title:'La Copa de la Luna', free:true, src:'Cuento original de Lunita',
+  title:'La Copa de la Luna', free:false, src:'Cuento original de Lunita',
   blurb:'Una pelota que habla invita a jugar la Copa de la Luna en el Potrero de los Sueños.',
   start:'f1', endScene:'potrero_copa',
   nodes:{
@@ -1737,13 +1737,15 @@ const STORIES={
 },
   mundo:{
   title:'El mirador del mundo', free:false, src:'Cuento original de Lunita',
-  blurb:'Una noche, el mapa del cuarto se enciende y una luciérnaga busca exploradores. Pensado para quienes llegaron al mundo antes de tiempo: cuenta que el protagonista nació chiquito.',
-  aviso:'Un aviso antes de empezar: este cuento cuenta que el protagonista nació antes de tiempo, chiquito y con muchas ganas. Si en tu familia no fue así, pueden leerlo igual: es una historia sobre llegar lejos.',
+  blurb:'Una noche, el mapa del cuarto se enciende y una luciérnaga busca exploradores. Los adultos eligen si el cuento cuenta que el protagonista nació antes de tiempo.',
+  consulta:{texto:'Antes de empezar: este cuento puede contar que el protagonista nació antes de tiempo, chiquito y con muchas ganas. Elegí cómo querés leerlo.',si:'Que cuente que nació antes de tiempo',no:'Leerlo sin eso'},
   start:'m1', endScene:'mirador_final',
   nodes:{
     m1:{step:1,scene:'cuarto_mapa',
-      text:()=>P(`Cuando ${N()} nació, cabía en una sola mano, con los piecitos apenas asomando. Había llegado antes de tiempo, con muchas ganas de empezar a vivir. Todos cuidaron de ${N()} con muchísima paciencia: le cantaban bajito, le contaban cuentos y le daban todo el tiempo del mundo.`)+
-        P(`Y ${N()} fue creciendo, creciendo, creciendo. Hoy juega, canta y se ríe fuerte. Y tiene un sueño enorme: conocer el mundo entero. Por eso, sobre la cama, hay un mapa gigante, y ${N()} lo mira todas las noches antes de dormir.`)+
+      text:()=>(S.consulta!=='no'
+        ?P(`Cuando ${N()} nació, cabía en una sola mano, con los piecitos apenas asomando. Había llegado antes de tiempo, con muchas ganas de empezar a vivir. Todos cuidaron de ${N()} con muchísima paciencia: le cantaban bajito, le contaban cuentos y le daban todo el tiempo del mundo.`)+
+        P(`Y ${N()} fue creciendo, creciendo, creciendo. Hoy juega, canta y se ríe fuerte. Y tiene un sueño enorme: conocer el mundo entero. Por eso, sobre la cama, hay un mapa gigante, y ${N()} lo mira todas las noches antes de dormir.`)
+        :P(`A ${N()} le encantan los mapas. Sobre la cama hay un mapa gigante, y ${N()} lo mira todas las noches antes de dormir. Tiene un sueño enorme: conocer el mundo entero.`))+
         P(`Esa noche, un puntito del mapa empezó a titilar: pip, pip, pip. Del puntito salió Brillita, una luciérnaga chiquitita, y ${CF()}, la miró con los ojos muy abiertos.`)+
         P(`—Busco exploradores —dijo Brillita, con su lucecita cansada—. Hay un mirador desde donde se ve el mundo entero, pero hay que llegar antes de que la luna suba a lo más alto del cielo.`),
       q:()=>`¿Qué hace ${N()}?`,
@@ -1844,7 +1846,7 @@ const SOON=[
   {id:'soldadito',title:'El soldadito de plomo',src:'Inspirado en Hans Christian Andersen'},
   {id:'gato',title:'El gato de las botas rojas',src:'Inspirado en Charles Perrault'},
   {id:'yacares',title:'Los yacarés del río',src:'Inspirado en Horacio Quiroga'},
-  {id:'ia',title:'Tu propio cuento',src:'Escribís la idea y se arma un cuento nuevo'}
+  {id:'ia',title:'Tu propio cuento',src:'Un cuento a partir de tu idea. Cuando exista, te contamos qué se envía y a quién'}
 ];
 const COVER_IMG=['futbol','dibujos','luna','tortuga','ceibo','pichon','mundo'];
 function cover(id){
@@ -1942,7 +1944,7 @@ function homeHTML(){
     </div>
   </div>
   <div class="step"><span class="num pink">2</span><b>Elegí un cuento</b></div>
-  <div class="lib">${storyCard('futbol',true)}${storyCard('luna',false)}${PREMIUM.map(id=>storyCard(id,false)).join('')}</div>
+  <div class="lib">${storyCard('pichon',true)}${storyCard('luna',false)}${PREMIUM.map(id=>storyCard(id,false)).join('')}</div>
   <p class="soon-h">Muy pronto</p>
   <div class="soon">${soon}</div>
   ${reminderHTML()}
@@ -1961,7 +1963,9 @@ function readerHTML(){
   const starsRow=[1,2,3,4,5].map(i=>ICON.star(i<=step?'#ffc94a':'#4b52a8')).join('');
   let body;
   if(!ended){
-    body=`${(st.aviso&&S.node===st.start)?`<p class="aviso">${st.aviso}</p>`:''}<div class="story">${node.text()}</div><div class="choices"><div class="q">${node.q()}</div>${node.choices.map((ch,i)=>`<button class="choice" data-act="choose" data-i="${i}"><span class="dot">${'ABC'[i]}</span><span class="opt">${ch.t()}</span></button>`).join('')}</div>`;
+    body=(st.consulta&&S.node===st.start&&S.consulta===undefined)
+    ?`<div class="consulta"><p class="aviso">${st.consulta.texto}</p><div class="choices"><button class="choice" data-act="consulta" data-v="si"><span class="dot">A</span><span class="opt">${st.consulta.si}</span></button><button class="choice" data-act="consulta" data-v="no"><span class="dot">B</span><span class="opt">${st.consulta.no}</span></button></div><p class="endnote">Esta elección no se guarda.</p></div>`
+    :`<div class="story">${node.text()}</div><div class="choices"><div class="q">${node.q()}</div>${node.choices.map((ch,i)=>`<button class="choice" data-act="choose" data-i="${i}"><span class="dot">${'ABC'[i]}</span><span class="opt">${ch.t()}</span></button>`).join('')}</div>`;
   }else{
     const e=st.endings[S.ending],found=S.endings[S.story].length;
     const medals=Object.entries(TRAITS).map(([k,l])=>{const [ic,bg]=MEDAL_ICON[k];return `<div class="medal"><i style="background:${bg}">${ICON[ic]}</i>${l}<span>${'★'.repeat(S.traits[k])||'–'}</span></div>`}).join('');
@@ -2000,7 +2004,8 @@ function modalHTML(){
     <ul class="perks"><li>${listText}, y los cuentos nuevos que se sumen a la biblioteca</li><li>Aviso de la hora del cuento, mientras Lunita esté abierta</li><li>Sin publicidad</li></ul>
     <p>Estamos terminando de prepararlo. Si querés que te avisemos cuando esté listo, escribinos y te respondemos con la novedad.</p>
     <div class="mrow"><a class="btn" href="${AVISAME_HREF}">Avisame cuando esté listo</a><button class="btn sec" data-act="close">Ahora no</button></div>
-    <p class="fine">Todavía no se cobra nada. Cuando esté lista, se paga con Mercado Pago y se cancela cuando quieras. Al escribirnos recibimos tu dirección de mail, y solo la usamos para avisarte del lanzamiento.</p>
+    <p class="fine">Todavía no se cobra nada. Cuando esté lista: un pago por mes con Mercado Pago, sin período de prueba (ya podés leer dos cuentos gratis). Se cancela cuando quieras desde tu cuenta de Mercado Pago, y seguís teniendo los cuentos hasta el final del mes que ya pagaste.</p>
+    <p class="fine">Al escribirnos recibimos tu dirección de mail, y solo la usamos para avisarte del lanzamiento.</p>
     <button class="linkbtn" data-act="privacy">Privacidad y quiénes somos</button>`;
   else if(m.type==='priv') inner=`<span class="eyebrow">Privacidad y quiénes somos</span><h2 id="mTitle">Cuidamos lo que nos cuentan</h2>
     <div class="priv cg">
@@ -2095,7 +2100,7 @@ function startStory(id){
   if(!STORIES[id]) return;
   if(!STORIES[id].free&&!S.subscribed){openPremium(id);return}
   S.modal=null;renderModal();
-  S.story=id;S.screen='reader';S.node=STORIES[id].start;S.path=[];S.traits={valentia:0,bondad:0,ingenio:0};S.ending=null;
+  S.consulta=undefined;S.story=id;S.screen='reader';S.node=STORIES[id].start;S.path=[];S.traits={valentia:0,bondad:0,ingenio:0};S.ending=null;
   render();window.scrollTo(0,0);
 }
 function goHome(){autoRead=false;S.audio=false;S.screen='home';render();window.scrollTo(0,0)}
@@ -2141,6 +2146,7 @@ document.addEventListener('click',e=>{
   }
   else if(act==='subscribe'){S.subscribed=true;save();S.modal={type:'done',next:S.pending||PREMIUM[0]};renderModal();if(S.screen==='home')render()}
   else if(act==='close') closeModal();
+  else if(act==='consulta'){S.consulta=el.dataset.v;render();window.scrollTo(0,0)}
   else if(act==='privacy'){S.modal={type:'priv',wipe:false};renderModal()}
   else if(act==='wipe'){if(S.modal&&S.modal.wipe){try{localStorage.removeItem('lunita')}catch(e){}location.reload()}else if(S.modal){S.modal.wipe=true;renderModal()}}
   else if(act==='rem-toggle'){
