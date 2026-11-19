@@ -3,8 +3,8 @@
    - Las imágenes y letras (arte/) van "primero la copia": se guardan al verse por primera vez.
    - NUNCA toca pedidos a otros sitios: la comprobación del pago (Cloudflare) y Mercado Pago pasan siempre directo por la red.
    Los dos nombres de caché se calculan al armar el sitio (lanzamiento/armar_sitio.py): cambian solo si cambia la app o el arte. */
-const CACHE_PAGINAS = 'lunita-paginas-943cd476c1';
-const CACHE_ARTE = 'lunita-arte-9f87d622f2';
+const CACHE_PAGINAS = 'lunita-paginas-9fc3768de0';
+const CACHE_ARTE = 'lunita-arte-fc3d62e423';
 const PRECARGA = ['./', 'privacidad.html', 'manifest.webmanifest', 'arte/pwa/icon-192.png', 'arte/pwa/icon-512.png', 'arte/pwa/maskable-512.png', 'arte/pwa/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
